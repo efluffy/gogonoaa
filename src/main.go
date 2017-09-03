@@ -18,7 +18,7 @@ type Alert struct {
 }
 
 type Alerts struct {
-	Alerts []Alert `xml:"alert"`
+	Alerts []Alert `xml:"info"`
 }
 
 type Geocode struct {
@@ -37,6 +37,10 @@ type Entrys struct {
 }
 
 func main() {
+	if len(os.Args) < 2 {
+		fmt.Println("Please provide the CAP location code to check.")
+		os.Exit(1)
+	}
 	var capcode = os.Args[1]
 	response, err := http.Get("https://alerts.weather.gov/cap/us.php?x=0")
 	body, err := ioutil.ReadAll(response.Body)
@@ -59,10 +63,10 @@ func main() {
 			}
 			var qAlert Alerts
 			xml.Unmarshal(bodyAlert, &qAlert)
-			fmt.Println(len(qAlert.Alerts))
 			for _, Alert := range qAlert.Alerts {
 				fmt.Printf("%s : %s\n%s - %s\n%s", Alert.Type, Alert.Headline, Alert.Issued, Alert.Expires, Alert.Description)
 			}
 		}
 	}
+	os.Exit(0)
 }
