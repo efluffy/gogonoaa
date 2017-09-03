@@ -8,6 +8,8 @@ BUILD := `git rev-parse HEAD`
 LDFLAGS=-ldflags "-X=main.Version=$(VERSION) -X=main.Build=$(BUILD)"
 SRC = $(shell find src/ -type f -name '*.go')
 
+export GOBIN=./bin
+
 .PHONY: all build clean install uninstall check
 
 all: check install
@@ -20,6 +22,9 @@ build: $(TARGET)
 
 clean:
 	@rm -f $(TARGET)
+
+fmt:
+	@gofmt -l -w $(SRC)
 
 install:
 	@go install $(LDFLAGS) $(SRC)
