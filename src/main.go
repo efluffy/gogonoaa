@@ -6,7 +6,20 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"regexp"
 )
+
+type Alert struct {
+	Type        string `xml:"event"`
+	Issued      string `xml:"effective"`
+	Expires     string `xml:"expires"`
+	Headline    string `xml:"headline"`
+	Description string `xml:"description"`
+}
+
+type Alerts struct {
+	Alerts []Alert `xml:"alert"`
+}
 
 type Geocode struct {
 	ValueName string `xml:"valueName"`
@@ -14,12 +27,9 @@ type Geocode struct {
 }
 
 type Entry struct {
-	Title     string  `xml:"title"`
-	Updated   string  `xml:"updated"`
-	Published string  `xml:"published"`
-	Summary   string  `xml:"summary"`
-	AlertType string  `xml:"msgType"`
-	Location  Geocode `xml:"geocode"`
+	Title    string  `xml:"title"`
+	Link     string  `xml:"id"`
+	Location Geocode `xml:"geocode"`
 }
 
 type Entrys struct {
@@ -31,7 +41,7 @@ func main() {
 	response, err := http.Get("https://alerts.weather.gov/cap/us.php?x=0")
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		fmt.Println("Error getting XML feed from NOAA:", err)
+		fmt.Println("Error getting main XML feed from NOAA:", err)
 		return
 	}
 
@@ -39,11 +49,20 @@ func main() {
 	xml.Unmarshal(body, &q)
 
 	for _, Entry := range q.Entrys {
-		if Entry.Location.Value == capcode {
-			fmt.Printf("%s : %s\n", Entry.AlertType, Entry.Title)
-			fmt.Printf("%s", Entry.Published)
-			fmt.Printf(" - %s\n", Entry.Updated)
-			fmt.Printf("\t%s\n", Entry.Summary)
+		re := regexp.MustCompile(capcode)
+		if re.MatchString(Entry.Location.Value) {
+			responseAlert, err := http.Get(Entry.Link)
+			bodyAlert, err := ioutil.ReadAll(responseAlert.Body)
+			if err != nil {
+				fmt.Println("Error getting alert XML feed from NOAA:", err)
+				return
+			}
+			var qAlert Alerts
+			xml.Unmarshal(bodyAlert, &qAlert)
+			fmt.Println(len(qAlert.Alerts))
+			for _, Alert := range qAlert.Alerts {
+				fmt.Printf("%s : %s\n%s - %s\n%s", Alert.Type, Alert.Headline, Alert.Issued, Alert.Expires, Alert.Description)
+			}
 		}
 	}
 }
