@@ -37,6 +37,7 @@ type Entrys struct {
 }
 
 func main() {
+	var found = 0
 	if len(os.Args) < 2 {
 		fmt.Println("Please provide the CAP location code to check.")
 		os.Exit(1)
@@ -51,7 +52,6 @@ func main() {
 
 	var q Entrys
 	xml.Unmarshal(body, &q)
-
 	for _, Entry := range q.Entrys {
 		re := regexp.MustCompile(capcode)
 		if re.MatchString(Entry.Location.Value) {
@@ -64,9 +64,13 @@ func main() {
 			var qAlert Alerts
 			xml.Unmarshal(bodyAlert, &qAlert)
 			for _, Alert := range qAlert.Alerts {
-				fmt.Printf("%s : %s\n%s - %s\n%s", Alert.Type, Alert.Headline, Alert.Issued, Alert.Expires, Alert.Description)
+				found++
+				fmt.Printf("%s : %s\n%s - %s\n%s\n", Alert.Type, Alert.Headline, Alert.Issued, Alert.Expires, Alert.Description)
 			}
 		}
+	}
+	if found == 0 {
+		fmt.Println("No active watches or warnings for this area.")
 	}
 	os.Exit(0)
 }
