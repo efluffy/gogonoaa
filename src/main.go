@@ -70,7 +70,7 @@ func main() {
 		}
 	}
 	if found == 0 {
-		fmt.Println("No active watches or warnings for this area.")
+		fmt.Println("<font id=\"alertBody\">No active watches or warnings for this area.<font>")
 	}
 	os.Exit(0)
 }
