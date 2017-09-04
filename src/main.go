@@ -65,7 +65,7 @@ func main() {
 			xml.Unmarshal(bodyAlert, &qAlert)
 			for _, Alert := range qAlert.Alerts {
 				found++
-				fmt.Printf("%s : %s\n%s - %s\n%s\n", Alert.Type, Alert.Headline, Alert.Issued, Alert.Expires, Alert.Description)
+				fmt.Printf("<font id=\"alertHeader\">%s</font><font id=\"alertBody\">%s</font><font id=\"alertDesc\">%s</font>", Alert.Type, Alert.Headline, Alert.Description)
 			}
 		}
 	}
